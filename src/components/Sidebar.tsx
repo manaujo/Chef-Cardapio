@@ -1,4 +1,5 @@
 import React from 'react';
+import { User } from '@supabase/supabase-js';
 import { 
   Home, 
   UtensilsCrossed, 
@@ -6,20 +7,25 @@ import {
   Eye, 
   QrCode, 
   HelpCircle, 
-  LogOut,
-  ChefHat
+  LogOut
 } from 'lucide-react';
-import { useApp } from '../contexts/AppContext';
+import { useAuthContext } from '../contexts/AuthContext';
+import { Logo } from './Logo';
 
 type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'support';
 
 interface SidebarProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
+  user: User | null;
 }
 
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
-  const { logout, currentUser } = useApp();
+export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
+  const { signOut } = useAuthContext();
+
+  const handleLogout = async () => {
+    await signOut();
+  };
 
   const menuItems = [
     { id: 'home' as ActiveTab, label: 'Dashboard', icon: Home },
@@ -31,17 +37,13 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 shadow-sm z-40">
+    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-orange-100 shadow-lg z-40">
       <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
-            <ChefHat className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-gray-900">Chef Cardápio</h1>
-            <p className="text-xs text-gray-500">{currentUser?.email}</p>
-          </div>
-        </div>
+        <Logo size="md" variant="dark" />
+        <p className="text-xs text-gray-500 mt-2">{user?.email}</p>
+        {user?.user_metadata?.name && (
+          <p className="text-xs text-gray-600 font-medium">{user.user_metadata.name}</p>
+        )}
       </div>
 
       <nav className="p-4">
@@ -54,7 +56,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                   onClick={() => onTabChange(item.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                     activeTab === item.id
-                      ? 'bg-red-50 text-red-700 border-red-200 border'
+                      ? 'bg-gradient-to-r from-orange-50 to-red-50 text-orange-700 border-orange-200 border shadow-sm'
                       : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
@@ -69,8 +71,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
       <div className="absolute bottom-4 left-4 right-4">
         <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-red-50 hover:text-red-700 transition-all duration-200"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-all duration-200"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-medium">Sair</span>

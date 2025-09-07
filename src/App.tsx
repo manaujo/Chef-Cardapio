@@ -1,29 +1,84 @@
 import React from 'react';
-import { AppProvider, useApp } from './contexts/AppContext';
-import { Login } from './components/Login';
+import { AuthProvider } from './contexts/AuthContext';
+import { AppProvider } from './contexts/AppContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './components/Dashboard';
 import { LandingPage } from './components/LandingPage';
+import { Login } from './components/Login';
+import { useAuthContext } from './contexts/AuthContext';
 
 function AppContent() {
-  const { currentUser } = useApp();
-  const [showLanding, setShowLanding] = React.useState(true);
+  const { user, loading } = useAuthContext();
+  const [showLanding, setShowLanding] = React.useState(!user);
+  const [showLogin, setShowLogin] = React.useState(false);
 
-  if (showLanding && !currentUser) {
-    return <LandingPage onGetStarted={() => setShowLanding(false)} />;
+  // Show loading while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!currentUser) {
-    return <Login />;
+  // If user is authenticated, show dashboard
+  if (user) {
+    return (
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    );
   }
 
-  return <Dashboard />;
+  // If showing landing page
+  if (showLanding && !showLogin) {
+    return (
+      <LandingPage 
+        onGetStarted={() => {
+          setShowLanding(false);
+          setShowLogin(false);
+        }}
+        onLogin={() => {
+          setShowLanding(false);
+          setShowLogin(true);
+        }}
+      />
+    );
+  }
+
+  // If showing login page
+  if (showLogin) {
+    return (
+      <Login 
+        onBack={() => {
+          setShowLanding(true);
+          setShowLogin(false);
+        }}
+      />
+    );
+  }
+
+  // Default to login
+  return (
+    <Login 
+      onBack={() => {
+        setShowLanding(true);
+        setShowLogin(false);
+      }}
+    />
+  );
 }
 
 function App() {
   return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <AppContent />
+      </AppProvider>
+    </AuthProvider>
   );
 }
 

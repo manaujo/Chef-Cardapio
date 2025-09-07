@@ -44,9 +44,9 @@ export type ColorTheme = {
 };
 
 export const colorThemes: ColorTheme[] = [
-  { name: 'Vermelho Clássico', primary: '#DC2626', secondary: '#FEE2E2', accent: '#991B1B' },
-  { name: 'Laranja Vibrante', primary: '#EA580C', secondary: '#FED7AA', accent: '#C2410C' },
-  { name: 'Dourado', primary: '#D97706', secondary: '#FEF3C7', accent: '#92400E' },
+  { name: 'Laranja Quente', primary: '#EA580C', secondary: '#FED7AA', accent: '#C2410C' },
+  { name: 'Vermelho Intenso', primary: '#DC2626', secondary: '#FEE2E2', accent: '#991B1B' },
+  { name: 'Dourado Elegante', primary: '#D97706', secondary: '#FEF3C7', accent: '#92400E' },
   { name: 'Verde Fresco', primary: '#059669', secondary: '#D1FAE5', accent: '#047857' },
   { name: 'Azul Oceano', primary: '#2563EB', secondary: '#DBEAFE', accent: '#1D4ED8' },
   { name: 'Roxo Elegante', primary: '#7C3AED', secondary: '#EDE9FE', accent: '#5B21B6' },

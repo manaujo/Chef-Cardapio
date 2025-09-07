@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuthContext } from '../contexts/AuthContext';
 import { Sidebar } from './Sidebar';
 import { MenuEditor } from './MenuEditor';
 import { RestaurantSettings } from './RestaurantSettings';
@@ -11,6 +12,7 @@ type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'support';
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const { user } = useAuthContext();
 
   const renderContent = () => {
     switch (activeTab) {
@@ -33,7 +35,7 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} user={user} />
       <main className="flex-1 ml-64">
         {renderContent()}
       </main>
