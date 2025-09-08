@@ -18,7 +18,7 @@ interface DashboardHomeProps {
 }
 
 export function DashboardHome({ onNavigate }: DashboardHomeProps) {
-  const { products, categories, restaurantConfig } = useApp();
+  const { products, categories, restaurant } = useApp();
 
   const stats = [
     {
@@ -35,13 +35,13 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
     },
     {
       label: 'Cardápio Público',
-      value: restaurantConfig.name ? 'Ativo' : 'Inativo',
+      value: restaurant?.name ? 'Ativo' : 'Inativo',
       icon: Eye,
       color: 'bg-green-50 text-green-700',
     },
     {
       label: 'Pedidos WhatsApp',
-      value: restaurantConfig.whatsappOrdersEnabled ? 'Ativo' : 'Inativo',
+      value: restaurant?.whatsapp_orders_enabled ? 'Ativo' : 'Inativo',
       icon: Users,
       color: 'bg-blue-50 text-blue-700',
     },

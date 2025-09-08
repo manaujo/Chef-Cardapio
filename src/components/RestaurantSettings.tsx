@@ -1,24 +1,56 @@
 import React, { useState } from 'react';
 import { Save, Palette, MessageCircle } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { colorThemes, ColorTheme } from '../types';
+
+const colorThemes = [
+  { name: 'Laranja Quente', primary: '#EA580C', secondary: '#FED7AA', accent: '#C2410C' },
+  { name: 'Vermelho Intenso', primary: '#DC2626', secondary: '#FEE2E2', accent: '#991B1B' },
+  { name: 'Dourado Elegante', primary: '#D97706', secondary: '#FEF3C7', accent: '#92400E' },
+  { name: 'Verde Fresco', primary: '#059669', secondary: '#D1FAE5', accent: '#047857' },
+  { name: 'Azul Oceano', primary: '#2563EB', secondary: '#DBEAFE', accent: '#1D4ED8' },
+  { name: 'Roxo Elegante', primary: '#7C3AED', secondary: '#EDE9FE', accent: '#5B21B6' },
+];
 
 export function RestaurantSettings() {
-  const { restaurantConfig, updateRestaurantConfig } = useApp();
+  const { restaurant, updateRestaurant } = useApp();
   
-  const [config, setConfig] = useState(restaurantConfig);
+  const [config, setConfig] = useState(restaurant || {
+    name: 'Meu Restaurante',
+    delivery_time: '30-40 min',
+    whatsapp: '',
+    working_hours: 'Seg - Dom: 18h às 23h',
+    address: '',
+    theme_color: '#EA580C',
+    whatsapp_orders_enabled: true
+  });
   const [saved, setSaved] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateRestaurantConfig(config);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    
+    try {
+      await updateRestaurant(config);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (error) {
+      console.error('Error updating restaurant:', error);
+      alert('Erro ao salvar configurações');
+    }
   };
 
-  const handleColorChange = (theme: ColorTheme) => {
-    setConfig(prev => ({ ...prev, themeColor: theme.primary }));
+  const handleColorChange = (theme: any) => {
+    setConfig(prev => ({ ...prev, theme_color: theme.primary }));
   };
+
+  if (!restaurant) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <p className="text-gray-600">Carregando configurações...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-4xl">
@@ -53,8 +85,8 @@ export function RestaurantSettings() {
               </label>
               <input
                 type="text"
-                value={config.deliveryTime}
-                onChange={(e) => setConfig(prev => ({ ...prev, deliveryTime: e.target.value }))}
+                value={config.delivery_time}
+                onChange={(e) => setConfig(prev => ({ ...prev, delivery_time: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Ex: 30-40 min"
               />
@@ -66,8 +98,8 @@ export function RestaurantSettings() {
               </label>
               <input
                 type="text"
-                value={config.workingHours}
-                onChange={(e) => setConfig(prev => ({ ...prev, workingHours: e.target.value }))}
+                value={config.working_hours}
+                onChange={(e) => setConfig(prev => ({ ...prev, working_hours: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 placeholder="Ex: Seg - Dom: 18h às 23h"
               />
@@ -113,8 +145,8 @@ export function RestaurantSettings() {
               <input
                 type="checkbox"
                 id="whatsappOrders"
-                checked={config.whatsappOrdersEnabled}
-                onChange={(e) => setConfig(prev => ({ ...prev, whatsappOrdersEnabled: e.target.checked }))}
+                checked={config.whatsapp_orders_enabled}
+                onChange={(e) => setConfig(prev => ({ ...prev, whatsapp_orders_enabled: e.target.checked }))}
                 className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
               />
               <label htmlFor="whatsappOrders" className="text-sm font-medium text-gray-700">
@@ -123,7 +155,7 @@ export function RestaurantSettings() {
             </div>
             
             <div className="ml-7 text-sm text-gray-600">
-              {config.whatsappOrdersEnabled ? (
+              {config.whatsapp_orders_enabled ? (
                 <div className="flex items-center gap-2 text-green-700">
                   <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <span>Clientes poderão fazer pedidos direto pelo WhatsApp</span>
@@ -156,7 +188,7 @@ export function RestaurantSettings() {
                 type="button"
                 onClick={() => handleColorChange(theme)}
                 className={`p-4 rounded-lg border-2 transition-all ${
-                  config.themeColor === theme.primary
+                  config.theme_color === theme.primary
                     ? 'border-gray-800 shadow-md'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}

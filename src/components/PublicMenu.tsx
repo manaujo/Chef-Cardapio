@@ -3,7 +3,7 @@ import { Clock, MapPin, Phone, ExternalLink, MessageCircle } from 'lucide-react'
 import { useApp } from '../contexts/AppContext';
 
 export function PublicMenu() {
-  const { products, categories, restaurantConfig } = useApp();
+  const { products, categories, restaurant } = useApp();
 
   const formatWhatsAppMessage = (productName: string, productPrice: number) => {
     const message = `Olá! Gostaria de pedir:\n\n🍽️ ${productName}\n💰 R$ ${productPrice.toFixed(2)}\n\nPoderia me ajudar com o pedido?`;
@@ -11,22 +11,32 @@ export function PublicMenu() {
   };
 
   const handleWhatsAppOrder = (productName: string, productPrice: number) => {
-    if (!restaurantConfig.whatsapp) {
+    if (!restaurant?.whatsapp) {
       alert('WhatsApp não configurado!');
       return;
     }
     
-    const cleanPhone = restaurantConfig.whatsapp.replace(/[^\d]/g, '');
+    const cleanPhone = restaurant.whatsapp.replace(/[^\d]/g, '');
     const message = formatWhatsAppMessage(productName, productPrice);
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
   };
 
-  const menuUrl = `${window.location.origin}/menu/${btoa(restaurantConfig.name)}`;
+  const menuUrl = `${window.location.origin}/menu/${restaurant?.id || 'preview'}`;
 
   const categoryProducts = (categoryId: string) => {
-    return products.filter(p => p.categoryId === categoryId);
+    return products.filter(p => p.category_id === categoryId && p.is_available);
   };
+
+  if (!restaurant) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <p className="text-gray-600">Carregando preview do cardápio...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-4xl">
@@ -51,28 +61,28 @@ export function PublicMenu() {
         <div 
           className="w-full bg-white rounded-lg shadow-lg overflow-hidden"
           style={{ 
-            '--theme-color': restaurantConfig.themeColor,
-            '--theme-color-light': restaurantConfig.themeColor + '20'
+            '--theme-color': restaurant.theme_color,
+            '--theme-color-light': restaurant.theme_color + '20'
           } as React.CSSProperties}
         >
           {/* Header */}
           <div 
             className="text-white p-6 text-center"
-            style={{ backgroundColor: restaurantConfig.themeColor }}
+            style={{ backgroundColor: restaurant.theme_color }}
           >
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">{restaurantConfig.name}</h1>
-            {restaurantConfig.deliveryTime && (
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">{restaurant.name}</h1>
+            {restaurant.delivery_time && (
               <div className="flex items-center justify-center gap-2 text-white/90">
                 <Clock className="w-4 h-4" />
-                <span>{restaurantConfig.deliveryTime}</span>
+                <span>{restaurant.delivery_time}</span>
               </div>
             )}
           </div>
 
           {/* Working Hours */}
-          {restaurantConfig.workingHours && (
+          {restaurant.working_hours && (
             <div className="bg-gray-50 p-4 text-center">
-              <p className="text-gray-700 font-medium">{restaurantConfig.workingHours}</p>
+              <p className="text-gray-700 font-medium">{restaurant.working_hours}</p>
             </div>
           )}
 
@@ -85,8 +95,8 @@ export function PublicMenu() {
                   <h2 
                     className="text-xl font-bold mb-4 pb-2 border-b-2"
                     style={{ 
-                      color: restaurantConfig.themeColor,
-                      borderColor: restaurantConfig.themeColor 
+                      color: restaurant.theme_color,
+                      borderColor: restaurant.theme_color 
                     }}
                   >
                     {category.name}
@@ -96,10 +106,10 @@ export function PublicMenu() {
                     {categoryProducts(category.id).map((product) => (
                       <div key={product.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
                         <div className="md:flex">
-                          {product.image && (
+                          {product.image_url && (
                             <div className="md:w-32 h-32 md:h-24 flex-shrink-0">
                               <img
-                                src={product.image}
+                                src={product.image_url}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                               />
@@ -111,7 +121,7 @@ export function PublicMenu() {
                               <h3 className="font-semibold text-gray-900">{product.name}</h3>
                               <span 
                                 className="font-bold text-lg ml-4 flex-shrink-0"
-                                style={{ color: restaurantConfig.themeColor }}
+                                style={{ color: restaurant.theme_color }}
                               >
                                 R$ {product.price.toFixed(2)}
                               </span>
@@ -121,11 +131,11 @@ export function PublicMenu() {
                               <p className="text-gray-600 text-sm mb-3">{product.description}</p>
                             )}
                             
-                            {restaurantConfig.whatsappOrdersEnabled && restaurantConfig.whatsapp && (
+                            {restaurant.whatsapp_orders_enabled && restaurant.whatsapp && (
                               <button
                                 onClick={() => handleWhatsAppOrder(product.name, product.price)}
                                 className="flex items-center gap-2 px-4 py-2 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
-                                style={{ backgroundColor: restaurantConfig.themeColor }}
+                                style={{ backgroundColor: restaurant.theme_color }}
                               >
                                 <MessageCircle className="w-4 h-4" />
                                 Pedir pelo WhatsApp
@@ -148,21 +158,21 @@ export function PublicMenu() {
           </div>
 
           {/* Footer */}
-          {(restaurantConfig.address || restaurantConfig.whatsapp) && (
+          {(restaurant.address || restaurant.whatsapp) && (
             <div 
               className="text-white p-4 text-center text-sm"
-              style={{ backgroundColor: restaurantConfig.themeColor }}
+              style={{ backgroundColor: restaurant.theme_color }}
             >
-              {restaurantConfig.address && (
+              {restaurant.address && (
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <MapPin className="w-4 h-4" />
-                  <span>{restaurantConfig.address}</span>
+                  <span>{restaurant.address}</span>
                 </div>
               )}
-              {restaurantConfig.whatsapp && (
+              {restaurant.whatsapp && (
                 <div className="flex items-center justify-center gap-2">
                   <Phone className="w-4 h-4" />
-                  <span>{restaurantConfig.whatsapp}</span>
+                  <span>{restaurant.whatsapp}</span>
                 </div>
               )}
               <div className="mt-3 pt-3 border-t border-white/20 text-white/80 text-xs">

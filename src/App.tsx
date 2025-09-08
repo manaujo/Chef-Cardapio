@@ -1,10 +1,12 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { AppProvider } from './contexts/AppContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './components/Dashboard';
 import { LandingPage } from './components/LandingPage';
 import { Login } from './components/Login';
+import { PublicMenuPage } from './components/PublicMenuPage';
 import { useAuthContext } from './contexts/AuthContext';
 
 function AppContent() {
@@ -74,12 +76,29 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Public menu route */}
+          <Route path="/menu/:restaurantId" element={<PublicMenuRoute />} />
+          
+          {/* Main app routes */}
+          <Route path="/*" element={
+            <AppProvider>
+              <AppContent />
+            </AppProvider>
+          } />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
+}
+
+function PublicMenuRoute() {
+  const params = new URLSearchParams(window.location.search);
+  const restaurantId = window.location.pathname.split('/menu/')[1];
+  
+  return <PublicMenuPage restaurantId={restaurantId} />;
 }
 
 export default App;

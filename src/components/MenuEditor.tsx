@@ -1,32 +1,33 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Camera, Save, X, Tag } from 'lucide-react';
+import { Plus, Edit, Trash2, Camera, Save, X, Tag, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
-import { Product, Category } from '../types';
 
 export function MenuEditor() {
   const { 
-    products, 
+    restaurant,
     categories, 
-    addProduct, 
-    updateProduct, 
-    deleteProduct,
-    addCategory,
+    products,
+    createCategory,
     updateCategory,
-    deleteCategory
+    deleteCategory,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    toggleProductAvailability
   } = useApp();
 
   const [showProductForm, setShowProductForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const [showCategoryForm, setShowCategoryForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
 
   // Product form state
   const [productForm, setProductForm] = useState({
     name: '',
     price: '',
     description: '',
-    categoryId: '',
-    image: '',
+    category_id: '',
+    image_url: '',
   });
 
   // Category form state
@@ -39,8 +40,8 @@ export function MenuEditor() {
       name: '',
       price: '',
       description: '',
-      categoryId: '',
-      image: '',
+      category_id: '',
+      image_url: '',
     });
     setShowProductForm(false);
     setEditingProduct(null);
@@ -57,38 +58,50 @@ export function MenuEditor() {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProductForm(prev => ({ ...prev, image: e.target?.result as string }));
+        setProductForm(prev => ({ ...prev, image_url: e.target?.result as string }));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleProductSubmit = (e: React.FormEvent) => {
+  const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!productForm.name || !productForm.price || !productForm.categoryId) {
+    if (!productForm.name || !productForm.price || !productForm.category_id) {
       alert('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
-    const productData = {
-      name: productForm.name,
-      price: parseFloat(productForm.price),
-      description: productForm.description,
-      categoryId: productForm.categoryId,
-      image: productForm.image || undefined,
-    };
-
-    if (editingProduct) {
-      updateProduct(editingProduct.id, productData);
-    } else {
-      addProduct(productData);
+    if (!restaurant) {
+      alert('Erro: dados do restaurante não encontrados');
+      return;
     }
 
-    resetProductForm();
+    try {
+      const productData = {
+        restaurant_id: restaurant.id,
+        name: productForm.name,
+        price: parseFloat(productForm.price),
+        description: productForm.description,
+        category_id: productForm.category_id,
+        image_url: productForm.image_url || '',
+        is_available: true
+      };
+
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, productData);
+      } else {
+        await createProduct(productData);
+      }
+
+      resetProductForm();
+    } catch (error) {
+      console.error('Error saving product:', error);
+      alert('Erro ao salvar produto');
+    }
   };
 
-  const handleCategorySubmit = (e: React.FormEvent) => {
+  const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!categoryForm.name) {
@@ -96,31 +109,77 @@ export function MenuEditor() {
       return;
     }
 
-    if (editingCategory) {
-      updateCategory(editingCategory.id, categoryForm.name);
-    } else {
-      addCategory(categoryForm.name);
-    }
+    try {
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, { name: categoryForm.name });
+      } else {
+        await createCategory(categoryForm.name);
+      }
 
-    resetCategoryForm();
+      resetCategoryForm();
+    } catch (error) {
+      console.error('Error saving category:', error);
+      alert('Erro ao salvar categoria');
+    }
   };
 
-  const editProduct = (product: Product) => {
+  const editProduct = (product: any) => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
       price: product.price.toString(),
       description: product.description,
-      categoryId: product.categoryId,
-      image: product.image || '',
+      category_id: product.category_id,
+      image_url: product.image_url || '',
     });
     setShowProductForm(true);
   };
 
-  const editCategory = (category: Category) => {
+  const editCategory = (category: any) => {
     setEditingCategory(category);
     setCategoryForm({ name: category.name });
     setShowCategoryForm(true);
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    const categoryProducts = products.filter(p => p.category_id === categoryId);
+    
+    if (categoryProducts.length > 0) {
+      if (!confirm(`Esta categoria tem ${categoryProducts.length} produto(s). Deletar a categoria também deletará todos os produtos. Continuar?`)) {
+        return;
+      }
+    } else {
+      if (!confirm('Deletar esta categoria?')) {
+        return;
+      }
+    }
+
+    try {
+      await deleteCategory(categoryId);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      alert('Erro ao deletar categoria');
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm('Deletar este produto?')) return;
+
+    try {
+      await deleteProduct(productId);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Erro ao deletar produto');
+    }
+  };
+
+  const handleToggleAvailability = async (productId: string, currentAvailability: boolean) => {
+    try {
+      await toggleProductAvailability(productId, !currentAvailability);
+    } catch (error) {
+      console.error('Error toggling availability:', error);
+      alert('Erro ao alterar disponibilidade');
+    }
   };
 
   return (
@@ -160,7 +219,7 @@ export function MenuEditor() {
               <div>
                 <h3 className="font-medium text-gray-900">{category.name}</h3>
                 <p className="text-sm text-gray-500">
-                  {products.filter(p => p.categoryId === category.id).length} produtos
+                  {products.filter(p => p.category_id === category.id).length} produtos
                 </p>
               </div>
               <div className="flex gap-2">
@@ -171,11 +230,7 @@ export function MenuEditor() {
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => {
-                    if (confirm('Deletar esta categoria? Todos os produtos dela também serão removidos.')) {
-                      deleteCategory(category.id);
-                    }
-                  }}
+                  onClick={() => handleDeleteCategory(category.id)}
                   className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -188,7 +243,7 @@ export function MenuEditor() {
 
       {/* Products by Category */}
       {categories.map((category) => {
-        const categoryProducts = products.filter(p => p.categoryId === category.id);
+        const categoryProducts = products.filter(p => p.category_id === category.id);
         
         if (categoryProducts.length === 0) return null;
 
@@ -197,16 +252,25 @@ export function MenuEditor() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">{category.name}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categoryProducts.map((product) => (
-                <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                  {product.image && (
+                <div key={product.id} className={`bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden ${!product.is_available ? 'opacity-60' : ''}`}>
+                  {product.image_url && (
                     <img
-                      src={product.image}
+                      src={product.image_url}
                       alt={product.name}
                       className="w-full h-48 object-cover"
                     />
                   )}
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">{product.name}</h3>
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-semibold text-gray-900">{product.name}</h3>
+                      <button
+                        onClick={() => handleToggleAvailability(product.id, product.is_available)}
+                        className={`p-1 rounded ${product.is_available ? 'text-green-600 hover:bg-green-50' : 'text-gray-400 hover:bg-gray-50'}`}
+                        title={product.is_available ? 'Produto disponível' : 'Produto indisponível'}
+                      >
+                        {product.is_available ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                    </div>
                     <p className="text-red-600 font-bold text-lg mb-2">
                       R$ {product.price.toFixed(2)}
                     </p>
@@ -222,11 +286,7 @@ export function MenuEditor() {
                         Editar
                       </button>
                       <button
-                        onClick={() => {
-                          if (confirm('Deletar este produto?')) {
-                            deleteProduct(product.id);
-                          }
-                        }}
+                        onClick={() => handleDeleteProduct(product.id)}
                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -279,8 +339,8 @@ export function MenuEditor() {
                     Categoria *
                   </label>
                   <select
-                    value={productForm.categoryId}
-                    onChange={(e) => setProductForm(prev => ({ ...prev, categoryId: e.target.value }))}
+                    value={productForm.category_id}
+                    onChange={(e) => setProductForm(prev => ({ ...prev, category_id: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                     required
                   >
@@ -327,16 +387,16 @@ export function MenuEditor() {
                   </label>
                   <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
                     <div className="space-y-1 text-center">
-                      {productForm.image ? (
+                      {productForm.image_url ? (
                         <div className="relative">
                           <img
-                            src={productForm.image}
+                            src={productForm.image_url}
                             alt="Preview"
                             className="mx-auto h-32 w-32 object-cover rounded-lg"
                           />
                           <button
                             type="button"
-                            onClick={() => setProductForm(prev => ({ ...prev, image: '' }))}
+                            onClick={() => setProductForm(prev => ({ ...prev, image_url: '' }))}
                             className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
                           >
                             <X className="w-3 h-3" />

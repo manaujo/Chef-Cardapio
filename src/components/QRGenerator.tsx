@@ -4,10 +4,10 @@ import { Download, Share2, Copy, ExternalLink, QrCode as QRIcon } from 'lucide-r
 import { useApp } from '../contexts/AppContext';
 
 export function QRGenerator() {
-  const { restaurantConfig } = useApp();
+  const { restaurant } = useApp();
   const [copied, setCopied] = useState(false);
   
-  const menuUrl = `${window.location.origin}/menu/${btoa(restaurantConfig.name)}`;
+  const menuUrl = `${window.location.origin}/menu/${restaurant?.id || 'preview'}`;
 
   const copyToClipboard = async () => {
     try {
@@ -37,7 +37,7 @@ export function QRGenerator() {
           
           const pngFile = canvas.toDataURL('image/png');
           const downloadLink = document.createElement('a');
-          downloadLink.download = `qr-code-${restaurantConfig.name.toLowerCase().replace(/\s+/g, '-')}.png`;
+          downloadLink.download = `qr-code-${restaurant?.name.toLowerCase().replace(/\s+/g, '-') || 'cardapio'}.png`;
           downloadLink.href = pngFile;
           downloadLink.click();
         }
@@ -51,8 +51,8 @@ export function QRGenerator() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Cardápio - ${restaurantConfig.name}`,
-          text: `Confira o cardápio do ${restaurantConfig.name}`,
+          title: `Cardápio - ${restaurant?.name || 'Restaurante'}`,
+          text: `Confira o cardápio do ${restaurant?.name || 'Restaurante'}`,
           url: menuUrl,
         });
       } catch (err) {
@@ -63,6 +63,16 @@ export function QRGenerator() {
       copyToClipboard();
     }
   };
+
+  if (!restaurant) {
+    return (
+      <div className="p-8">
+        <div className="text-center">
+          <p className="text-gray-600">Carregando dados do restaurante...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-4xl">
@@ -163,7 +173,7 @@ export function QRGenerator() {
                   4
                 </div>
                 <p>
-                  {restaurantConfig.whatsappOrdersEnabled 
+                  {restaurant.whatsapp_orders_enabled 
                     ? 'Podem fazer pedidos direto pelo WhatsApp' 
                     : 'Visualizam o cardápio para fazer pedidos presenciais'
                   }
