@@ -11,7 +11,11 @@ import {
   Search,
   Star,
   ChefHat,
-  Utensils
+  Utensils,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2
 } from 'lucide-react';
 import { publicMenuService } from '../lib/database';
 import { PublicMenu } from '../types/database';
@@ -19,6 +23,14 @@ import { Logo } from './Logo';
 
 interface PublicMenuPageProps {
   restaurantId: string;
+}
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image_url?: string;
 }
 
 export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
@@ -29,6 +41,8 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
 
   useEffect(() => {
     loadMenu();
@@ -48,21 +62,89 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
     }
   };
 
-  const formatWhatsAppMessage = (productName: string, productPrice: number) => {
-    const message = `Olá! Gostaria de pedir:\n\n🍽️ ${productName}\n💰 R$ ${productPrice.toFixed(2)}\n\nPoderia me ajudar com o pedido?`;
+  const addToCart = (product: any) => {
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        return [...prevCart, {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image_url: product.image_url
+        }];
+      }
+    });
+  };
+
+  const removeFromCart = (productId: string) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  };
+
+  const updateQuantity = (productId: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    setCart(prevCart =>
+      prevCart.map(item =>
+        item.id === productId
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    );
+  };
+
+  const getCartTotal = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  const getCartItemsCount = () => {
+    return cart.reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const formatWhatsAppOrder = () => {
+    if (cart.length === 0) return '';
+    
+    let message = `Olá! Gostaria de fazer o seguinte pedido:\n\n`;
+    
+    cart.forEach(item => {
+      message += `🍽️ ${item.quantity}x ${item.name}\n`;
+      message += `💰 R$ ${(item.price * item.quantity).toFixed(2)}\n\n`;
+    });
+    
+    message += `💵 *Total: R$ ${getCartTotal().toFixed(2)}*\n\n`;
+    message += `Poderia me ajudar com o pedido?`;
+    
     return encodeURIComponent(message);
   };
 
-  const handleWhatsAppOrder = (productName: string, productPrice: number) => {
+  const handleWhatsAppOrder = () => {
     if (!menuData?.restaurant?.whatsapp) {
       alert('WhatsApp não configurado!');
       return;
     }
     
+    if (cart.length === 0) {
+      alert('Adicione produtos ao carrinho primeiro!');
+      return;
+    }
+    
     const cleanPhone = menuData.restaurant.whatsapp.replace(/[^\d]/g, '');
-    const message = formatWhatsAppMessage(productName, productPrice);
+    const message = formatWhatsAppOrder();
     const whatsappUrl = `https://wa.me/${cleanPhone}?text=${message}`;
     window.open(whatsappUrl, '_blank');
+    
+    // Limpar carrinho após enviar pedido
+    setCart([]);
+    setShowCart(false);
   };
 
   const getCategoryProducts = (categoryId: string) => {
@@ -183,14 +265,20 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
                 >
                   Contato
                 </button>
-                {restaurant.whatsapp_orders_enabled && restaurant.whatsapp && (
-                  <button
-                    onClick={() => handleWhatsAppOrder('Fazer Pedido', 0)}
-                    className="bg-white text-gray-900 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors shadow-lg"
-                  >
-                    Fazer Pedido
-                  </button>
-                )}
+                
+                {/* Cart Button */}
+                <button
+                  onClick={() => setShowCart(true)}
+                  className="relative bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full font-medium hover:bg-white/30 transition-colors border border-white/30 flex items-center gap-2"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  Carrinho
+                  {getCartItemsCount() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
+                      {getCartItemsCount()}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {/* Mobile menu button */}
@@ -224,14 +312,16 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
                   >
                     Contato
                   </button>
-                  {restaurant.whatsapp_orders_enabled && restaurant.whatsapp && (
-                    <button
-                      onClick={() => handleWhatsAppOrder('Fazer Pedido', 0)}
-                      className="bg-white text-gray-900 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors shadow-lg text-center"
-                    >
-                      Fazer Pedido
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      setShowCart(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="relative bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full font-medium hover:bg-white/30 transition-colors border border-white/30 flex items-center gap-2 w-fit"
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    Carrinho ({getCartItemsCount()})
+                  </button>
                 </div>
               </div>
             )}
@@ -341,11 +431,10 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
             {(selectedCategory === 'all' ? getAllProducts() : getCategoryProducts(selectedCategory)).map((product) => (
               <div 
                 key={product.id} 
-                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
-                onClick={() => setSelectedProduct(product)}
+                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
               >
                 {product.image_url && (
-                  <div className="h-48 overflow-hidden">
+                  <div className="h-48 overflow-hidden cursor-pointer" onClick={() => setSelectedProduct(product)}>
                     <img
                       src={product.image_url}
                       alt={product.name}
@@ -356,7 +445,9 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
                 
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-3">
-                    <h3 className="font-bold text-xl text-gray-900 leading-tight">{product.name}</h3>
+                    <h3 className="font-bold text-xl text-gray-900 leading-tight cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                      {product.name}
+                    </h3>
                     <div className="flex items-center gap-1 ml-2">
                       <Star className="w-4 h-4 text-yellow-400 fill-current" />
                       <span className="text-sm text-gray-600">4.8</span>
@@ -364,7 +455,9 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
                   </div>
                   
                   {product.description && (
-                    <p className="text-gray-600 mb-4 leading-relaxed line-clamp-2">{product.description}</p>
+                    <p className="text-gray-600 mb-4 leading-relaxed line-clamp-2 cursor-pointer" onClick={() => setSelectedProduct(product)}>
+                      {product.description}
+                    </p>
                   )}
                   
                   <div className="flex justify-between items-center">
@@ -375,18 +468,14 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
                       R$ {product.price.toFixed(2)}
                     </span>
                     
-                    {restaurant.whatsapp_orders_enabled && restaurant.whatsapp && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleWhatsAppOrder(product.name, product.price);
-                        }}
-                        className="text-white px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity shadow-md"
-                        style={{ backgroundColor: restaurant.theme_color }}
-                      >
-                        Pedir
-                      </button>
-                    )}
+                    <button
+                      onClick={() => addToCart(product)}
+                      className="flex items-center gap-2 text-white px-4 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity shadow-md"
+                      style={{ backgroundColor: restaurant.theme_color }}
+                    >
+                      <Plus className="w-4 h-4" />
+                      Adicionar
+                    </button>
                   </div>
                 </div>
               </div>
@@ -462,6 +551,109 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
         </div>
       </footer>
 
+      {/* Cart Modal */}
+      {showCart && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <ShoppingCart className="w-6 h-6" />
+                Carrinho ({getCartItemsCount()})
+              </h3>
+              <button
+                onClick={() => setShowCart(false)}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="max-h-96 overflow-y-auto">
+              {cart.length === 0 ? (
+                <div className="p-8 text-center">
+                  <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 mb-2">Seu carrinho está vazio</p>
+                  <p className="text-sm text-gray-400">Adicione produtos para fazer seu pedido</p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-4">
+                  {cart.map((item) => (
+                    <div key={item.id} className="flex items-center gap-4 bg-gray-50 rounded-lg p-4">
+                      {item.image_url && (
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="w-16 h-16 object-cover rounded-lg"
+                        />
+                      )}
+                      
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900">{item.name}</h4>
+                        <p className="text-sm" style={{ color: restaurant.theme_color }}>
+                          R$ {item.price.toFixed(2)}
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        
+                        <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                        
+                        <button
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="w-8 h-8 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity text-white"
+                          style={{ backgroundColor: restaurant.theme_color }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center hover:bg-red-200 transition-colors ml-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {cart.length > 0 && (
+              <div className="border-t border-gray-200 p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-semibold text-gray-900">Total:</span>
+                  <span className="text-2xl font-bold" style={{ color: restaurant.theme_color }}>
+                    R$ {getCartTotal().toFixed(2)}
+                  </span>
+                </div>
+                
+                {restaurant.whatsapp_orders_enabled && restaurant.whatsapp ? (
+                  <button
+                    onClick={handleWhatsAppOrder}
+                    className="w-full flex items-center justify-center gap-2 text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity shadow-lg"
+                    style={{ backgroundColor: restaurant.theme_color }}
+                  >
+                    <MessageCircle className="w-6 h-6" />
+                    Finalizar Pedido no WhatsApp
+                  </button>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm">
+                    Pedidos via WhatsApp não estão disponíveis
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Product Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -506,22 +698,32 @@ export function PublicMenuPage({ restaurantId }: PublicMenuPageProps) {
                 </span>
               </div>
               
-              {restaurant.whatsapp_orders_enabled && restaurant.whatsapp && (
-                <button
-                  onClick={() => {
-                    handleWhatsAppOrder(selectedProduct.name, selectedProduct.price);
-                    setSelectedProduct(null);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity shadow-lg"
-                  style={{ backgroundColor: restaurant.theme_color }}
-                >
-                  <MessageCircle className="w-6 h-6" />
-                  Pedir pelo WhatsApp
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  addToCart(selectedProduct);
+                  setSelectedProduct(null);
+                }}
+                className="w-full flex items-center justify-center gap-2 text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity shadow-lg"
+                style={{ backgroundColor: restaurant.theme_color }}
+              >
+                <Plus className="w-6 h-6" />
+                Adicionar ao Carrinho
+              </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Floating Cart Button (Mobile) */}
+      {getCartItemsCount() > 0 && (
+        <button
+          onClick={() => setShowCart(true)}
+          className="fixed bottom-6 right-6 md:hidden text-white p-4 rounded-full shadow-2xl z-40 flex items-center gap-2"
+          style={{ backgroundColor: restaurant.theme_color }}
+        >
+          <ShoppingCart className="w-6 h-6" />
+          <span className="font-bold">{getCartItemsCount()}</span>
+        </button>
       )}
     </div>
   );

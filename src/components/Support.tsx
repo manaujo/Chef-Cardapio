@@ -6,9 +6,9 @@ export function Support() {
     {
       type: 'email',
       label: 'E-mail',
-      value: 'chefcardapiooficial@gmail.com',
+      value: 'chefcomandaoficial@gmail.com',
       icon: Mail,
-      action: () => window.open('mailto:chefcardapiooficial@gmail.com', '_blank'),
+      action: () => window.open('mailto:chefcomandaoficial@gmail.com', '_blank'),
       color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
@@ -22,9 +22,9 @@ export function Support() {
     {
       type: 'instagram',
       label: 'Instagram',
-      value: '@Chefcardapio',
+      value: '@chefcomanda',
       icon: Instagram,
-      action: () => window.open('https://instagram.com/chefcardapio', '_blank'),
+      action: () => window.open('https://instagram.com/chefcomanda', '_blank'),
       color: 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600',
     },
   ];

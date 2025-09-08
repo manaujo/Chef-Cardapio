@@ -330,7 +330,7 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
               className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:from-red-600 hover:to-orange-600 transition-all duration-200 flex items-center justify-center gap-3 shadow-lg transform hover:scale-105"
             >
               <Zap className="w-6 h-6" />
-              Começar Grátis - 30 Dias
+              Começar Agora
             </button>
 
             <div className="text-center mt-4 text-sm text-gray-500">
@@ -388,13 +388,13 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
                 Crie seu cardápio digital e receba pedidos pelo WhatsApp.
               </p>
               <div className="flex gap-4">
-                <a href="mailto:chefcardapiooficial@gmail.com" className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
+                <a href="mailto:chefcomandaoficial@gmail.com" className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
                   <Mail className="w-5 h-5" />
                 </a>
                 <a href="https://wa.me/5562982760471" className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
                   <Phone className="w-5 h-5" />
                 </a>
-                <a href="https://instagram.com/chefcardapio" className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
+                <a href="https://instagram.com/chefcomanda" className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center hover:scale-110 transition-transform">
                   <Instagram className="w-5 h-5" />
                 </a>
               </div>
@@ -405,7 +405,7 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
               <div className="space-y-3 text-gray-400">
                 <p className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  chefcardapiooficial@gmail.com
+                  chefcomandaoficial@gmail.com
                 </p>
                 <p className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
@@ -413,7 +413,7 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
                 </p>
                 <p className="flex items-center gap-2">
                   <Instagram className="w-4 h-4" />
-                  @Chefcardapio
+                  @chefcomanda
                 </p>
               </div>
             </div>
