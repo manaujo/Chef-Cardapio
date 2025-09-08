@@ -5,10 +5,11 @@ import { MenuEditor } from './MenuEditor';
 import { RestaurantSettings } from './RestaurantSettings';
 import { PublicMenu } from './PublicMenu';
 import { QRGenerator } from './QRGenerator';
+import { SubscriptionManagement } from './SubscriptionManagement';
 import { Support } from './Support';
 import { DashboardHome } from './DashboardHome';
 
-type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'support';
+type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'subscription' | 'support';
 
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
@@ -26,6 +27,8 @@ export function Dashboard() {
         return <PublicMenu />;
       case 'qr':
         return <QRGenerator />;
+      case 'subscription':
+        return <SubscriptionManagement />;
       case 'support':
         return <Support />;
       default:

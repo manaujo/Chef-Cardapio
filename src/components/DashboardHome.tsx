@@ -7,9 +7,13 @@ import {
   TrendingUp, 
   Clock,
   Users,
-  ChefHat
+  ChefHat,
+  Crown
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { SubscriptionStatus } from './SubscriptionStatus';
+import { PricingPlans } from './PricingPlans';
+import { useSubscription } from '../hooks/useSubscription';
 
 type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'support';
 
@@ -19,6 +23,7 @@ interface DashboardHomeProps {
 
 export function DashboardHome({ onNavigate }: DashboardHomeProps) {
   const { products, categories, restaurant } = useApp();
+  const { hasAccess } = useSubscription();
 
   const stats = [
     {
@@ -89,6 +94,11 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
         </p>
       </div>
 
+      {/* Subscription Status */}
+      <div className="mb-8">
+        <SubscriptionStatus />
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat, index) => {
@@ -134,6 +144,25 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
         </div>
       </div>
 
+      {/* Pricing Plans for non-active users */}
+      {!hasAccess() && (
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200 mb-6">
+            <div className="flex items-center gap-3 mb-4">
+              <Crown className="w-6 h-6 text-orange-600" />
+              <h2 className="text-xl font-semibold text-gray-900">
+                Desbloqueie Todo o Potencial
+              </h2>
+            </div>
+            <p className="text-gray-700 mb-4">
+              Faça upgrade para o plano Pro e tenha acesso a recursos avançados, 
+              suporte prioritário e muito mais!
+            </p>
+          </div>
+          <PricingPlans />
+        </div>
+      )}
+
       {/* Getting Started */}
       <div className="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border border-red-100">
         <div className="flex items-start gap-4">
@@ -142,7 +171,7 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Primeiros Passos
+              {hasAccess() ? 'Continue Configurando' : 'Primeiros Passos'}
             </h3>
             <div className="space-y-2 text-sm text-gray-700">
               <div className="flex items-center gap-2">
@@ -162,7 +191,7 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
               onClick={() => onNavigate('settings')}
               className="mt-4 bg-white text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-50 transition-colors border border-red-200"
             >
-              Começar Configuração
+              {hasAccess() ? 'Ir para Configurações' : 'Começar Configuração'}
             </button>
           </div>
         </div>

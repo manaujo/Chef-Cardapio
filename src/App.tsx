@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Dashboard } from './components/Dashboard';
 import { LandingPage } from './components/LandingPage';
 import { Login } from './components/Login';
+import { SuccessPage } from './components/SuccessPage';
 import { PublicMenuPage } from './components/PublicMenuPage';
 import { useAuthContext } from './contexts/AuthContext';
 
@@ -81,6 +82,9 @@ function App() {
         <Routes>
           {/* Public menu route */}
           <Route path="/menu/:restaurantId" element={<PublicMenuRoute />} />
+          
+          {/* Success page route */}
+          <Route path="/success" element={<SuccessPage />} />
           
           {/* Main app routes */}
           <Route path="/*" element={

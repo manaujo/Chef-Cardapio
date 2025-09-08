@@ -7,12 +7,15 @@ import {
   Eye, 
   QrCode, 
   HelpCircle, 
-  LogOut
+  LogOut,
+  Crown,
+  CreditCard
 } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { useSubscription } from '../hooks/useSubscription';
 import { Logo } from './Logo';
 
-type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'support';
+type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'subscription' | 'support';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -22,6 +25,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
   const { signOut } = useAuthContext();
+  const { getSubscriptionPlan, isActive } = useSubscription();
 
   const handleLogout = async () => {
     await signOut();
@@ -33,6 +37,7 @@ export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
     { id: 'settings' as ActiveTab, label: 'Configurações', icon: Settings },
     { id: 'public' as ActiveTab, label: 'Cardápio Público', icon: Eye },
     { id: 'qr' as ActiveTab, label: 'QR Code', icon: QrCode },
+    { id: 'subscription' as ActiveTab, label: 'Planos e Assinaturas', icon: CreditCard },
     { id: 'support' as ActiveTab, label: 'Suporte', icon: HelpCircle },
   ];
 
@@ -44,6 +49,22 @@ export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
         {user?.user_metadata?.name && (
           <p className="text-xs text-gray-600 font-medium">{user.user_metadata.name}</p>
         )}
+        
+        {/* Subscription Status */}
+        <div className="mt-3">
+          {isActive() ? (
+            <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 px-2 py-1 rounded-full">
+              <Crown className="w-3 h-3" />
+              <span className="font-medium">
+                {getSubscriptionPlan()?.name.includes('Anual') ? 'Pro Anual' : 'Pro Mensal'}
+              </span>
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded-full text-center">
+              Plano Gratuito
+            </div>
+          )}
+        </div>
       </div>
 
       <nav className="p-4">
