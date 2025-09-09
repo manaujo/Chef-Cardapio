@@ -163,11 +163,6 @@ export function SubscriptionManagement() {
                 <p className="text-gray-600 text-lg">
                   /{plan.interval === 'year' ? 'ano' : 'mês'}
                 </p>
-                {plan.interval === 'year' && (
-                  <p className="text-green-600 text-sm font-medium mt-1">
-                    💰 Economize R$ 99,88/ano
-                  </p>
-                )}
               </div>
             )}
           </div>
@@ -203,7 +198,9 @@ export function SubscriptionManagement() {
                 <DollarSign className="w-6 h-6 text-purple-600" />
                 <span className="font-bold text-purple-900">Status do Pagamento</span>
               </div>
-              <p className="text-purple-800 text-lg font-semibold">Em dia</p>
+              <p className="text-purple-800 text-lg font-semibold">
+                {isActive() ? 'Em dia' : isTrialing() ? 'Período de teste' : 'Pendente'}
+              </p>
             </div>
           </div>
 

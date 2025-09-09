@@ -240,29 +240,29 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
 
       {/* Premium User Welcome */}
       {userHasAccess && (
-        <div className="bg-gradient-to-r from-green-50 via-blue-50 to-purple-50 rounded-2xl p-8 border border-green-200 shadow-sm mb-8">
+        <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-indigo-50 rounded-2xl p-8 border border-blue-200 shadow-sm mb-8">
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
               <Crown className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              🎉 Parabéns! Você tem acesso premium
+              🎉 Parabéns! Seu plano está ativo
             </h3>
             <p className="text-gray-700 mb-6">
-              Todas as funcionalidades estão liberadas. Comece criando seu cardápio digital!
+              Todas as funcionalidades do seu plano estão liberadas. Aproveite ao máximo!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
                 onClick={() => onNavigate('settings')} 
-                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-200 shadow-lg transform hover:scale-105"
+                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 shadow-lg transform hover:scale-105"
               >
                 Configurar Restaurante
               </button>
               <button 
                 onClick={() => onNavigate('menu')} 
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg transform hover:scale-105"
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all duration-200 shadow-lg transform hover:scale-105"
               >
-                Criar Cardápio
+                Gerenciar Sistema
               </button>
             </div>
           </div>

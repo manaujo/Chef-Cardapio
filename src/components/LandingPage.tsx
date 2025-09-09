@@ -281,29 +281,29 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-red-600 via-orange-600 to-yellow-500">
+      <section className="py-20 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Pronto para Revolucionar seu Restaurante?
           </h2>
           <p className="text-xl text-white/90 mb-8">
-            Junte-se a mais de 1.000 restaurantes que já modernizaram seus cardápios
+            Junte-se a centenas de restaurantes que já modernizaram seus sistemas
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
               onClick={onGetStarted}
-              className="bg-white text-red-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center gap-3 shadow-lg transform hover:scale-105"
+              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:bg-gray-50 transition-colors flex items-center gap-3 shadow-lg transform hover:scale-105"
             >
               <Heart className="w-6 h-6" />
-              Começar Minha Transformação Digital
+              Começar Agora - Teste Grátis
             </button>
           </div>
           
           <div className="mt-8 flex flex-wrap items-center justify-center gap-8 text-white/80 text-sm">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              <span>+1.000 restaurantes</span>
+              <span>Centenas de restaurantes</span>
             </div>
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4" />
@@ -311,7 +311,7 @@ export function LandingPage({ onGetStarted, onLogin }: LandingPageProps) {
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              <span>Suporte 24/7</span>
+              <span>7 dias grátis</span>
             </div>
           </div>
         </div>

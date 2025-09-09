@@ -34,18 +34,18 @@ export function PlanRequired({
             {[
               {
                 icon: Zap,
-                title: 'Acesso Completo',
-                description: 'Todas as funcionalidades liberadas'
+                title: 'Sistema Completo',
+                description: 'PDV, comandas e controle total'
               },
               {
                 icon: Crown,
-                title: 'Recursos Premium',
-                description: 'QR codes, WhatsApp, personalização'
+                title: 'Gestão Avançada',
+                description: 'Relatórios, estoque e exportação'
               },
               {
                 icon: CheckCircle,
                 title: 'Suporte Prioritário',
-                description: 'Atendimento especializado'
+                description: 'Suporte técnico incluído'
               }
             ].map((benefit, index) => {
               const Icon = benefit.icon;
@@ -63,11 +63,11 @@ export function PlanRequired({
           
           <div className="text-center">
             <p className="text-orange-700 font-medium mb-4">
-              ⚡ Para usar {feature}, você precisa de um plano ativo
+              ⚡ Para usar {feature}, você precisa assinar um plano
             </p>
             <div className="flex items-center justify-center gap-2 text-orange-600">
               <Sparkles className="w-5 h-5" />
-              <span className="font-semibold">Escolha seu plano e comece agora mesmo!</span>
+              <span className="font-semibold">Teste grátis por 7 dias - Cancele quando quiser!</span>
               <ArrowRight className="w-5 h-5" />
             </div>
           </div>
@@ -91,13 +91,13 @@ export function PlanRequired({
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-4">
-            <h4 className="font-bold text-gray-900 text-lg mb-4">✨ Recursos Premium</h4>
+            <h4 className="font-bold text-gray-900 text-lg mb-4">✨ Recursos Inclusos</h4>
             {[
-              'Cardápio digital ilimitado',
-              'QR Code personalizado',
-              'Pedidos via WhatsApp',
-              'Upload de fotos dos produtos',
-              'Personalização de cores'
+              'Sistema de PDV completo',
+              'Controle de comandas e mesas',
+              'Gerenciamento de garçons',
+              'Controle de estoque avançado',
+              'Dashboard completo'
             ].map((feature, index) => (
               <div key={index} className="flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -109,11 +109,11 @@ export function PlanRequired({
           <div className="space-y-4">
             <h4 className="font-bold text-gray-900 text-lg mb-4">🚀 Vantagens Exclusivas</h4>
             {[
-              'Categorias ilimitadas',
-              'Produtos ilimitados',
+              'Relatórios avançados de vendas',
+              'Exportação de dados (PDF/Excel)',
               'Suporte técnico prioritário',
-              'Atualizações automáticas',
-              'Analytics de visualizações'
+              'Teste grátis de 7 dias',
+              'Cancelamento a qualquer momento'
             ].map((feature, index) => (
               <div key={index} className="flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

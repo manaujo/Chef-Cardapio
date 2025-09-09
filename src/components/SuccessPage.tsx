@@ -47,19 +47,23 @@ export function SuccessPage() {
             <div className="space-y-2 text-sm text-gray-700">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-blue-600" />
-                <span>Sistema de PDV completo</span>
+                <span>Acesso completo às comandas e mesas</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-blue-600" />
-                <span>Controle de estoque</span>
+                <span>Gerenciamento para garçons e cozinha</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-blue-600" />
-                <span>Dashboard e relatórios</span>
+                <span>Controle de estoque avançado</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-blue-600" />
-                <span>Suporte técnico prioritário</span>
+                <span>Relatórios avançados de vendas</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span>Exportação de dados (PDF e Excel)</span>
               </div>
             </div>
           </div>
