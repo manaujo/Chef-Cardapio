@@ -242,8 +242,7 @@ export function SubscriptionManagement() {
               Nenhuma Assinatura Ativa
             </h2>
             <p className="text-gray-700 mb-6 max-w-2xl mx-auto text-lg">
-              Você está usando o plano gratuito. Faça upgrade para acessar recursos premium 
-              como cardápio ilimitado, QR codes personalizados e suporte prioritário.
+              Você não possui uma assinatura ativa. Escolha um plano para acessar todos os recursos.
             </p>
             
             <div className="mb-6">
@@ -263,7 +262,7 @@ export function SubscriptionManagement() {
             </div>
             <div className="flex items-center justify-center gap-2 text-orange-600 font-medium">
               <Zap className="w-5 h-5" />
-              <span>Desbloqueie todo o potencial do Chef Cardápio</span>
+              <span>Escolha seu plano e comece agora</span>
             </div>
           </div>
         </div>
@@ -286,9 +285,9 @@ export function SubscriptionManagement() {
               {[
                 { text: 'Acesso ao dashboard', available: true },
                 { text: 'Suporte básico', available: true },
-                { text: 'Editor de cardápio', available: false },
-                { text: 'QR Code personalizado', available: false },
-                { text: 'Pedidos via WhatsApp', available: false }
+                { text: 'Sistema de PDV', available: false },
+                { text: 'Controle de estoque', available: false },
+                { text: 'Relatórios avançados', available: false }
               ].map((feature, index) => (
                 <li key={index} className="flex items-center gap-3">
                   {feature.available ? (
@@ -307,20 +306,19 @@ export function SubscriptionManagement() {
           <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
             <h4 className="font-bold text-gray-900 mb-6 flex items-center gap-3 text-lg">
               <Crown className="w-6 h-6 text-orange-600" />
-              Plano Pro
+              Planos Premium
             </h4>
             <ul className="space-y-3">
               {[
-                'Cardápio digital ilimitado',
-                'QR Code personalizado',
-                'Pedidos via WhatsApp',
-                'Upload de fotos dos produtos',
-                'Personalização de cores',
-                'Categorias ilimitadas',
-                'Produtos ilimitados',
+                'Sistema de PDV completo',
+                'Controle de estoque avançado',
+                'Dashboard e relatórios',
+                'Exportação de dados (PDF e Excel)',
+                'Relatórios avançados de vendas',
+                'Gerenciamento de comandas e mesas',
                 'Suporte técnico prioritário',
                 'Atualizações automáticas',
-                'Analytics de visualizações'
+                'Teste grátis de 7 dias'
               ].map((feature, index) => (
                 <li key={index} className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />

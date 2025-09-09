@@ -42,15 +42,16 @@ export function useSubscription() {
 
       const { data, error: fetchError } = await supabase
         .from('stripe_user_subscriptions')
-        .select('*')
-        .maybeSingle();
+        .select('*');
 
       if (fetchError) {
         throw fetchError;
       }
 
-      console.log('Subscription data:', data);
-      setSubscription(data);
+      // Get the first subscription if any exist
+      const subscriptionData = data && data.length > 0 ? data[0] : null;
+      console.log('Subscription data:', subscriptionData);
+      setSubscription(subscriptionData);
     } catch (err) {
       console.error('Error fetching subscription:', err);
       setError('Erro ao carregar dados da assinatura');
@@ -64,18 +65,18 @@ export function useSubscription() {
     return getProductByPriceId(subscription.price_id);
   };
 
-  // Verificar se tem acesso premium (lógica simplificada)
+  // Check if user has premium access
   const hasAccess = () => {
     if (!subscription) return false;
     
-    // Deve ter subscription_id válido (pagamento processado)
+    // Must have valid subscription_id (payment processed)
     if (!subscription.subscription_id) return false;
     
-    // Status deve ser ativo
+    // Status must be active
     const activeStatuses = ['active', 'trialing'];
     if (!activeStatuses.includes(subscription.subscription_status)) return false;
     
-    // Período deve ser válido
+    // Period must be valid
     if (subscription.current_period_end) {
       const now = Math.floor(Date.now() / 1000);
       if (subscription.current_period_end <= now) return false;
@@ -106,7 +107,7 @@ export function useSubscription() {
   };
 
   const forceRefresh = async () => {
-    console.log('🔄 Force refreshing subscription data...');
+    console.log('🔄 Refreshing subscription data...');
     await fetchSubscription();
   };
 

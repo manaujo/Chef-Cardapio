@@ -28,7 +28,7 @@ export function PricingPlans() {
         throw new Error('Sessão inválida. Faça login novamente.');
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-checkout`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
@@ -86,14 +86,14 @@ export function PricingPlans() {
   };
 
   return (
-    <div className="py-16 bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50">
+    <div className="py-16 bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Escolha seu Plano
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Transforme seu restaurante com nossa plataforma completa de cardápio digital
+            Escolha o plano ideal para o seu negócio
           </p>
         </div>
 
@@ -102,14 +102,14 @@ export function PricingPlans() {
             <div
               key={product.id}
               className={`bg-white rounded-2xl shadow-lg border-2 p-8 relative ${
-                product.interval === 'month' 
-                  ? 'border-orange-200 transform scale-105' 
+                product.name === 'Básico'
+                  ? 'border-blue-200 transform scale-105' 
                   : 'border-gray-200'
               }`}
             >
-              {product.interval === 'month' && (
+              {product.name === 'Básico' && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-2 rounded-full text-sm font-bold">
+                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full text-sm font-bold">
                     MAIS POPULAR
                   </div>
                 </div>
@@ -117,10 +117,10 @@ export function PricingPlans() {
 
               <div className="text-center mb-8">
                 <div className="flex items-center justify-center mb-4">
-                  {product.interval === 'year' ? (
+                  {product.name === 'Básico' ? (
                     <Crown className="w-8 h-8 text-yellow-600" />
                   ) : (
-                    <Zap className="w-8 h-8 text-orange-600" />
+                    <Zap className="w-8 h-8 text-blue-600" />
                   )}
                 </div>
                 
@@ -129,18 +129,13 @@ export function PricingPlans() {
                 </h3>
                 
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className="text-4xl font-bold text-red-600">
+                  <span className="text-4xl font-bold text-blue-600">
                     R$ {product.price.toFixed(2)}
                   </span>
                   <div className="text-left">
                     <div className="text-lg text-gray-600">
-                      /{product.interval === 'year' ? 'ano' : 'mês'}
+                      /mês
                     </div>
-                    {product.interval === 'year' && (
-                      <div className="text-sm font-semibold text-green-600">
-                        Economize 2 meses
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -163,9 +158,9 @@ export function PricingPlans() {
                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
                   isCurrentPlan(product.priceId)
                     ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                    : product.interval === 'month'
-                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white hover:from-red-600 hover:to-orange-600 shadow-lg transform hover:scale-105'
-                    : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600 shadow-lg transform hover:scale-105'
+                    : product.name === 'Básico'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 shadow-lg transform hover:scale-105'
+                    : 'bg-gradient-to-r from-gray-500 to-gray-600 text-white hover:from-gray-600 hover:to-gray-700 shadow-lg transform hover:scale-105'
                 }`}
               >
                 {loadingPlan === product.priceId ? (
@@ -179,14 +174,6 @@ export function PricingPlans() {
                   'Assinar Agora'
                 )}
               </button>
-
-              {product.interval === 'year' && (
-                <div className="text-center mt-4">
-                  <p className="text-sm text-gray-500">
-                    💰 Economize R$ 99,88 por ano
-                  </p>
-                </div>
-              )}
             </div>
           ))}
         </div>

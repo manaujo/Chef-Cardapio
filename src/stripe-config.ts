@@ -11,32 +11,22 @@ export interface StripeProduct {
 
 export const stripeProducts: StripeProduct[] = [
   {
-    id: 'prod_T17YJNH4cGgrlH',
-    priceId: 'price_1S55J4B4if3rE1yXQHYm0Hqj',
-    name: 'Chef Cardápio Pro Anual',
-    description: 'Cardápio digital ilimitado • QR Code personalizado • Pedidos via WhatsApp • Upload de fotos dos produtos • Personalização de cores • Categorias ilimitadas • Produtos ilimitados • Suporte técnico prioritário • Atualizações automáticas • Analytics de visualizações',
+    id: 'prod_SH7PnRqOmYrIcY',
+    priceId: 'price_1RMZAmB4if3rE1yX5xRa4ZnU',
+    name: 'Básico',
+    description: 'Acesso completo às comandas e mesas • Gerenciamento para garçons e cozinha • Controle de estoque • Acesso ao dashboard • Relatórios avançados de vendas • Exportação de dados (PDF e Excel) • Suporte padrão • Cancelamento a qualquer momento • Teste grátis de 7 dias',
     mode: 'subscription',
-    price: 499.99,
-    currency: 'BRL',
-    interval: 'year'
-  },
-  {
-    id: 'prod_T16sudzR836Om2',
-    priceId: 'price_1S54eXB4if3rE1yXgB2DaJ1X',
-    name: 'Plano Chef Cardápio Pro',
-    description: 'Cardápio digital ilimitado • QR Code personalizado • Pedidos via WhatsApp • Upload de fotos dos produtos • Personalização de cores • Categorias ilimitadas • Produtos ilimitados • Suporte técnico prioritário • Atualizações automáticas • Analytics de visualizações',
-    mode: 'subscription',
-    price: 49.99,
+    price: 60.90,
     currency: 'BRL',
     interval: 'month'
   },
   {
-    id: 'prod_SytnLTTRUGsctD',
-    priceId: 'price_1S2w0KB4if3rE1yX3gGCzDaQ',
-    name: 'Teste',
-    description: 'teste',
+    id: 'prod_SH7OklHXQdHNrC',
+    priceId: 'price_1RMZ9lB4if3rE1yXpPOjawb5',
+    name: 'Starter',
+    description: 'Sistema de PDV completo • Controle de estoque • Dashboard e relatórios • Exportação de dados (PDF e Excel) • Relatórios avançados de vendas • Suporte padrão • Cancelamento a qualquer momento • Teste grátis de 7 dias',
     mode: 'subscription',
-    price: 1.00,
+    price: 40.00,
     currency: 'BRL',
     interval: 'month'
   }

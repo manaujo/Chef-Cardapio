@@ -16,11 +16,11 @@ export function SuccessPage() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
           {/* Success Icon */}
-          <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-12 h-12 text-white" />
           </div>
 
@@ -35,30 +35,30 @@ export function SuccessPage() {
           </h1>
           
           <p className="text-gray-600 mb-8 leading-relaxed">
-            Parabéns! Sua assinatura foi ativada e você já pode aproveitar todos os recursos premium do Chef Cardápio.
+            Parabéns! Sua assinatura foi ativada e você já pode aproveitar todos os recursos do seu plano.
           </p>
 
           {/* Features Highlight */}
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-8">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center justify-center gap-2">
               <Crown className="w-5 h-5 text-yellow-600" />
               Agora você tem acesso a:
             </h3>
             <div className="space-y-2 text-sm text-gray-700">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-green-600" />
-                <span>Cardápio digital ilimitado</span>
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span>Sistema de PDV completo</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-green-600" />
-                <span>QR Code personalizado</span>
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span>Controle de estoque</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-green-600" />
-                <span>Pedidos via WhatsApp</span>
+                <Zap className="w-4 h-4 text-blue-600" />
+                <span>Dashboard e relatórios</span>
               </div>
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-green-600" />
+                <Zap className="w-4 h-4 text-blue-600" />
                 <span>Suporte técnico prioritário</span>
               </div>
             </div>
@@ -67,7 +67,7 @@ export function SuccessPage() {
           {/* Action Button */}
           <button
             onClick={() => navigate('/')}
-            className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-emerald-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-600 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
           >
             Ir para o Dashboard
             <ArrowRight className="w-5 h-5" />
@@ -81,7 +81,7 @@ export function SuccessPage() {
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-600">
-          <p>Obrigado por escolher o Chef Cardápio! 🍽️</p>
+          <p>Obrigado por escolher nossos serviços! 🚀</p>
         </div>
       </div>
     </div>
