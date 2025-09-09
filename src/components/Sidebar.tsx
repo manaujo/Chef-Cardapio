@@ -9,13 +9,14 @@ import {
   HelpCircle, 
   LogOut,
   Crown,
-  CreditCard
+  CreditCard,
+  User as UserIcon
 } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
 import { useSubscription } from '../hooks/useSubscription';
 import { Logo } from './Logo';
 
-type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'subscription' | 'support';
+type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'subscription' | 'support' | 'profile';
 
 interface SidebarProps {
   activeTab: ActiveTab;
@@ -28,7 +29,29 @@ export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
   const { getSubscriptionPlan, isActive } = useSubscription();
 
   const handleLogout = async () => {
-    await signOut();
+    try {
+      // Mostrar loading state
+      const button = document.querySelector('[data-logout-btn]') as HTMLButtonElement;
+      if (button) {
+        button.disabled = true;
+        button.textContent = 'Saindo...';
+      }
+      
+      await signOut();
+    } catch (error) {
+      console.error('Error during logout:', error);
+      
+      // Forçar limpeza completa em caso de erro
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch (storageError) {
+        console.warn('Could not clear storage:', storageError);
+      }
+      
+      // Redirecionar para página inicial
+      window.location.href = '/';
+    }
   };
 
   const menuItems = [
@@ -37,6 +60,7 @@ export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
     { id: 'settings' as ActiveTab, label: 'Configurações', icon: Settings },
     { id: 'public' as ActiveTab, label: 'Cardápio Público', icon: Eye },
     { id: 'qr' as ActiveTab, label: 'QR Code', icon: QrCode },
+    { id: 'profile' as ActiveTab, label: 'Perfil e Conta', icon: UserIcon },
     { id: 'subscription' as ActiveTab, label: 'Planos e Assinaturas', icon: CreditCard },
     { id: 'support' as ActiveTab, label: 'Suporte', icon: HelpCircle },
   ];
@@ -92,6 +116,7 @@ export function Sidebar({ activeTab, onTabChange, user }: SidebarProps) {
 
       <div className="absolute bottom-4 left-4 right-4">
         <button
+          data-logout-btn
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-all duration-200"
         >

@@ -15,6 +15,22 @@ function AppContent() {
   const [showLanding, setShowLanding] = React.useState(!user);
   const [showLogin, setShowLogin] = React.useState(false);
 
+  // Forçar limpeza se não há usuário mas há dados em localStorage
+  React.useEffect(() => {
+    if (!user && !loading) {
+      try {
+        const hasStoredData = localStorage.getItem('supabase.auth.token') || 
+                             sessionStorage.getItem('supabase.auth.token');
+        if (hasStoredData) {
+          localStorage.clear();
+          sessionStorage.clear();
+        }
+      } catch (error) {
+        console.warn('Could not check/clear storage:', error);
+      }
+    }
+  }, [user, loading]);
+
   // Show loading while checking auth state
   if (loading) {
     return (

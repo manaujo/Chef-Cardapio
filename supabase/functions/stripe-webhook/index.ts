@@ -127,6 +127,8 @@ async function handleEvent(event: Stripe.Event) {
 // based on the excellent https://github.com/t3dotgg/stripe-recommendations
 async function syncCustomerFromStripe(customerId: string) {
   try {
+    console.log(`🔄 Starting sync for customer: ${customerId}`);
+    
     // fetch latest subscription data from Stripe
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
@@ -135,11 +137,14 @@ async function syncCustomerFromStripe(customerId: string) {
       expand: ['data.default_payment_method'],
     });
 
+    console.log(`📊 Found ${subscriptions.data.length} subscriptions for customer ${customerId}`);
+
     if (subscriptions.data.length === 0) {
-      console.info(`No active subscriptions found for customer: ${customerId}`);
+      console.info(`❌ No active subscriptions found for customer: ${customerId}`);
       const { error: noSubError } = await supabase.from('stripe_subscriptions').upsert(
         {
           customer_id: customerId,
+          status: 'not_started' as any,
           subscription_status: 'not_started' as any,
         },
         {
@@ -148,7 +153,7 @@ async function syncCustomerFromStripe(customerId: string) {
       );
 
       if (noSubError) {
-        console.error('Error updating subscription status:', noSubError);
+        console.error('❌ Error updating subscription status:', noSubError);
         throw new Error('Failed to update subscription status in database');
       }
       return;
@@ -156,6 +161,7 @@ async function syncCustomerFromStripe(customerId: string) {
 
     // assumes that a customer can only have a single subscription
     const subscription = subscriptions.data[0];
+    console.log(`🔄 Syncing subscription ${subscription.id} with status ${subscription.status}`);
 
     // store subscription state
     const subscriptionData = {
@@ -165,14 +171,17 @@ async function syncCustomerFromStripe(customerId: string) {
       current_period_start: subscription.current_period_start,
       current_period_end: subscription.current_period_end,
       cancel_at_period_end: subscription.cancel_at_period_end,
+      status: subscription.status as any,
       subscription_status: subscription.status as any,
     };
 
     // Add payment method info if available
     if (subscription.default_payment_method && typeof subscription.default_payment_method !== 'string') {
-      subscriptionData.payment_method_brand = subscription.default_payment_method.card?.brand ?? null;
-      subscriptionData.payment_method_last4 = subscription.default_payment_method.card?.last4 ?? null;
+      (subscriptionData as any).payment_method_brand = subscription.default_payment_method.card?.brand ?? null;
+      (subscriptionData as any).payment_method_last4 = subscription.default_payment_method.card?.last4 ?? null;
     }
+
+    console.log('💾 Upserting subscription data:', JSON.stringify(subscriptionData, null, 2));
 
     const { error: subError } = await supabase.from('stripe_subscriptions').upsert(
       subscriptionData,
@@ -182,12 +191,26 @@ async function syncCustomerFromStripe(customerId: string) {
     );
 
     if (subError) {
-      console.error('Error syncing subscription:', subError);
+      console.error('❌ Error syncing subscription:', subError);
       throw new Error('Failed to sync subscription in database');
     }
-    console.info(`Successfully synced subscription for customer: ${customerId}`);
+    console.info(`✅ Successfully synced subscription for customer: ${customerId}`);
+    
+    // Log final verification
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('stripe_subscriptions')
+      .select('*')
+      .eq('customer_id', customerId)
+      .single();
+      
+    if (verifyError) {
+      console.error('❌ Error verifying saved data:', verifyError);
+    } else {
+      console.log('✅ Verification - Data saved successfully:', JSON.stringify(verifyData, null, 2));
+    }
+    
   } catch (error) {
-    console.error(`Failed to sync subscription for customer ${customerId}:`, error);
+    console.error(`❌ Failed to sync subscription for customer ${customerId}:`, error);
     throw error;
   }
 }
