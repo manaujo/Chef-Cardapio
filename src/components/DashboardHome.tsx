@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Sparkles,
   BarChart3,
-  Zap
+  Zap,
+  AlertTriangle
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { useSubscription } from '../hooks/useSubscription';
@@ -25,7 +26,9 @@ interface DashboardHomeProps {
 
 export function DashboardHome({ onNavigate }: DashboardHomeProps) {
   const { products, categories, restaurant } = useApp();
-  const { hasAccess } = useSubscription();
+  const { hasAccess, subscription, loading } = useSubscription();
+
+  const userHasAccess = hasAccess();
 
   const stats = [
     {
@@ -59,14 +62,14 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
       changeType: 'neutral'
     },
     {
-      label: 'Pedidos WhatsApp',
-      value: restaurant?.whatsapp_orders_enabled ? 'Ativo' : 'Inativo',
-      icon: Users,
-      color: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-700',
-      change: restaurant?.whatsapp ? 'Configurado' : 'Pendente',
-      changeType: restaurant?.whatsapp ? 'positive' : 'warning'
+      label: 'Plano',
+      value: userHasAccess ? 'Premium' : 'Gratuito',
+      icon: Crown,
+      color: userHasAccess ? 'from-yellow-500 to-yellow-600' : 'from-gray-500 to-gray-600',
+      bgColor: userHasAccess ? 'bg-yellow-50' : 'bg-gray-50',
+      textColor: userHasAccess ? 'text-yellow-700' : 'text-gray-700',
+      change: userHasAccess ? 'Ativo' : 'Upgrade',
+      changeType: userHasAccess ? 'positive' : 'warning'
     },
   ];
 
@@ -79,7 +82,8 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
       color: 'from-red-500 to-red-600',
       iconBg: 'bg-red-100',
       iconColor: 'text-red-600',
-      badge: products.length > 0 ? `${products.length} produtos` : 'Começar'
+      badge: products.length > 0 ? `${products.length} produtos` : 'Começar',
+      premium: true
     },
     {
       title: 'Configurações',
@@ -89,7 +93,8 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
       color: 'from-orange-500 to-orange-600',
       iconBg: 'bg-orange-100',
       iconColor: 'text-orange-600',
-      badge: restaurant?.name !== 'Meu Restaurante' ? 'Configurado' : 'Pendente'
+      badge: restaurant?.name !== 'Meu Restaurante' ? 'Configurado' : 'Pendente',
+      premium: true
     },
     {
       title: 'Ver Cardápio Público',
@@ -99,7 +104,8 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
       color: 'from-green-500 to-green-600',
       iconBg: 'bg-green-100',
       iconColor: 'text-green-600',
-      badge: 'Visualizar'
+      badge: 'Visualizar',
+      premium: true
     },
     {
       title: 'Gerar QR Code',
@@ -109,7 +115,8 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
       color: 'from-purple-500 to-purple-600',
       iconBg: 'bg-purple-100',
       iconColor: 'text-purple-600',
-      badge: 'Compartilhar'
+      badge: 'Compartilhar',
+      premium: true
     },
   ];
 
@@ -168,7 +175,7 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {quickActions.map((action, index) => {
             const Icon = action.icon;
-            const isDisabled = !hasAccess() && ['menu', 'settings', 'public', 'qr'].includes(action.action.toString().split("'")[1]);
+            const isDisabled = action.premium && !userHasAccess && !loading;
             
             return (
               <button
@@ -177,7 +184,7 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
                 disabled={isDisabled}
                 className={`group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 transition-all duration-300 text-left transform ${
                   isDisabled 
-                    ? 'opacity-50 cursor-not-allowed' 
+                    ? 'opacity-60 cursor-not-allowed' 
                     : 'hover:shadow-xl hover:-translate-y-2 hover:border-orange-200'
                 }`}
               >
@@ -194,7 +201,7 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">{action.description}</p>
                 <div className="flex items-center text-orange-600 text-sm font-medium">
-                  <span>{isDisabled ? 'Requer Plano' : 'Acessar'}</span>
+                  <span>{isDisabled ? 'Requer Plano Premium' : 'Acessar'}</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </div>
               </button>
@@ -203,8 +210,8 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
         </div>
       </div>
 
-      {/* Subscription Status for Free Users */}
-      {!hasAccess() && (
+      {/* Subscription Status */}
+      {!userHasAccess && !loading && (
         <div className="bg-gradient-to-r from-orange-50 via-red-50 to-yellow-50 rounded-2xl p-8 border border-orange-200 shadow-sm mb-8">
           <div className="text-center">
             <Crown className="w-16 h-16 text-orange-600 mx-auto mb-4" />
@@ -231,6 +238,37 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
         </div>
       )}
 
+      {/* Premium User Welcome */}
+      {userHasAccess && (
+        <div className="bg-gradient-to-r from-green-50 via-blue-50 to-purple-50 rounded-2xl p-8 border border-green-200 shadow-sm mb-8">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Crown className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              🎉 Parabéns! Você tem acesso premium
+            </h3>
+            <p className="text-gray-700 mb-6">
+              Todas as funcionalidades estão liberadas. Comece criando seu cardápio digital!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button 
+                onClick={() => onNavigate('settings')} 
+                className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-200 shadow-lg transform hover:scale-105"
+              >
+                Configurar Restaurante
+              </button>
+              <button 
+                onClick={() => onNavigate('menu')} 
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-3 rounded-xl font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-200 shadow-lg transform hover:scale-105"
+              >
+                Criar Cardápio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Getting Started Guide */}
       <div className="bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 rounded-2xl p-8 border border-orange-100 shadow-sm">
         <div className="flex items-start gap-6">
@@ -239,14 +277,16 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
           </div>
           <div className="flex-1">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              {hasAccess() ? 'Continue Configurando seu Restaurante' : 'Como Começar'}
+              {userHasAccess ? 'Continue Configurando seu Restaurante' : 'Como Começar'}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm p-4 rounded-xl">
                 <div className="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
-                  <Settings className="w-4 h-4 text-white" />
+                  {userHasAccess ? <Settings className="w-4 h-4 text-white" /> : <Crown className="w-4 h-4 text-white" />}
                 </div>
-                <span className="text-sm font-medium text-gray-700">{hasAccess() ? 'Configure as informações do seu restaurante' : 'Escolha um plano premium'}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {userHasAccess ? 'Configure as informações do seu restaurante' : 'Escolha um plano premium'}
+                </span>
               </div>
               <div className="flex items-center gap-3 bg-white/60 backdrop-blur-sm p-4 rounded-xl">
                 <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -262,10 +302,10 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
               </div>
             </div>
             <button
-              onClick={() => onNavigate(hasAccess() ? 'settings' : 'subscription')}
+              onClick={() => onNavigate(userHasAccess ? 'settings' : 'subscription')}
               className="bg-gradient-to-r from-red-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-orange-600 transition-all duration-200 flex items-center gap-2 shadow-lg transform hover:scale-105"
             >
-              {hasAccess() ? 'Ir para Configurações' : 'Escolher Plano Premium'}
+              {userHasAccess ? 'Ir para Configurações' : 'Escolher Plano Premium'}
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>
@@ -273,7 +313,7 @@ export function DashboardHome({ onNavigate }: DashboardHomeProps) {
       </div>
 
       {/* Analytics Preview (if has access) */}
-      {hasAccess() && (
+      {userHasAccess && (
         <div className="mt-8 bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <BarChart3 className="w-6 h-6 text-blue-600" />

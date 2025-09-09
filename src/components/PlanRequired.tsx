@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Sparkles, ArrowRight, CheckCircle, Zap } from 'lucide-react';
+import { Crown, Sparkles, ArrowRight, CheckCircle, Zap, Star } from 'lucide-react';
 import { PricingPlans } from './PricingPlans';
 
 interface PlanRequiredProps {
@@ -84,7 +84,8 @@ export function PlanRequired({
 
       {/* Features Comparison */}
       <div className="mt-16 bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-        <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">
+        <h3 className="text-2xl font-bold text-gray-900 text-center mb-8 flex items-center justify-center gap-3">
+          <Star className="w-6 h-6 text-yellow-500" />
           O que você ganha com o plano premium
         </h3>
         

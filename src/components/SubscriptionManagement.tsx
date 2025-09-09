@@ -21,20 +21,17 @@ import {
 } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { PricingPlans } from './PricingPlans';
-import { SubscriptionDebugInfo } from './SubscriptionDebugInfo';
-import { SubscriptionDiagnostic } from './SubscriptionDiagnostic';
 
 export function SubscriptionManagement() {
   const { 
     subscription, 
     loading, 
-    lastCheck,
     getSubscriptionPlan, 
-    isActive, 
+    hasAccess,
+    isActive,
     isTrialing, 
     isCanceled, 
     isPastDue,
-    hasAccess,
     refetch,
     forceRefresh
   } = useSubscription();
@@ -46,20 +43,15 @@ export function SubscriptionManagement() {
   const handleForceRefresh = async () => {
     setRefreshing(true);
     try {
-      console.log('🔄 Manual refresh triggered');
+      console.log('🔄 Atualizando status da assinatura...');
       await forceRefresh();
-      showMessage('success', 'Status da assinatura atualizado!');
+      alert('Status da assinatura atualizado!');
     } catch (error) {
-      console.error('Manual refresh error:', error);
-      showMessage('error', 'Erro ao atualizar status');
+      console.error('Erro ao atualizar:', error);
+      alert('Erro ao atualizar status');
     } finally {
       setRefreshing(false);
     }
-  };
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
-    // You can implement a toast notification system here
-    alert(text);
   };
 
   const handleManagePayment = async () => {
@@ -87,67 +79,8 @@ export function SubscriptionManagement() {
         window.open(data.url, '_blank');
       }
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      console.error('Erro ao abrir portal:', error);
       alert('Erro ao abrir portal de pagamento. Tente novamente.');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    setActionLoading('cancel');
-    
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-cancel`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // Refresh subscription data
-      await refetch();
-      setShowCancelConfirm(false);
-      alert('Assinatura cancelada com sucesso. Você continuará tendo acesso até o final do período atual.');
-    } catch (error) {
-      console.error('Error canceling subscription:', error);
-      alert('Erro ao cancelar assinatura. Tente novamente.');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleReactivateSubscription = async () => {
-    setActionLoading('reactivate');
-    
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-reactivate`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      // Refresh subscription data
-      await refetch();
-      alert('Assinatura reativada com sucesso!');
-    } catch (error) {
-      console.error('Error reactivating subscription:', error);
-      alert('Erro ao reativar assinatura. Tente novamente.');
     } finally {
       setActionLoading(null);
     }
@@ -168,6 +101,7 @@ export function SubscriptionManagement() {
 
   const plan = getSubscriptionPlan();
   const periodEnd = subscription?.current_period_end ? new Date(subscription.current_period_end * 1000) : null;
+  const userHasAccess = hasAccess();
 
   return (
     <div className="p-8 bg-gradient-to-br from-gray-50 to-white min-h-screen">
@@ -194,37 +128,8 @@ export function SubscriptionManagement() {
         </div>
       </div>
 
-      {/* Debug Info for Development */}
-      {process.env.NODE_ENV === 'development' && subscription && (
-        <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-4 mb-6 text-xs font-mono">
-          <h3 className="font-bold mb-3 text-yellow-800">🔍 Debug Info (Última verificação: {new Date(lastCheck).toLocaleTimeString()})</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p><strong>Status:</strong> {subscription.subscription_status}</p>
-              <p><strong>Subscription ID:</strong> {subscription.subscription_id || '❌ None'}</p>
-              <p><strong>Customer ID:</strong> {subscription.customer_id}</p>
-              <p><strong>Price ID:</strong> {subscription.price_id || 'None'}</p>
-            </div>
-            <div>
-              <p><strong>Period End:</strong> {subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toLocaleString() : 'None'}</p>
-              <p><strong>Has Access:</strong> <span className={hasAccess() ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>{hasAccess() ? '✅ YES' : '❌ NO'}</span></p>
-              <p><strong>Current Time:</strong> {Math.floor(Date.now() / 1000)}</p>
-              <p><strong>Time Valid:</strong> {subscription.current_period_end && subscription.current_period_end > Math.floor(Date.now() / 1000) ? '✅ Yes' : '❌ No'}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Debug Info for Development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mb-8">
-          <SubscriptionDiagnostic />
-          <SubscriptionDebugInfo />
-        </div>
-      )}
-
       {/* Current Subscription Status */}
-      {subscription ? (
+      {subscription && userHasAccess ? (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
           <div className="flex items-start justify-between mb-8">
             <div className="flex items-center gap-6">
@@ -236,33 +141,17 @@ export function SubscriptionManagement() {
                   {plan?.name || 'Plano Ativo'}
                 </h2>
                 <div className="flex items-center gap-3 mb-2">
-                  {isActive() || isTrialing() ? (
-                    <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full">
-                      <CheckCircle className="w-4 h-4" />
-                      <span className="font-semibold text-sm">
-                        {isActive() ? 'Ativo' : 'Período de Teste'}
-                      </span>
-                    </div>
-                  ) : isPastDue() ? (
-                    <div className="flex items-center gap-2 bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">
-                      <AlertTriangle className="w-4 h-4" />
-                      <span className="font-semibold text-sm">Pagamento Pendente</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full">
-                      <XCircle className="w-4 h-4" />
-                      <span className="font-semibold text-sm">
-                        {isCanceled() ? 'Cancelado' : subscription.subscription_status}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                {(isActive() || isTrialing()) && (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <Sparkles className="w-4 h-4" />
-                    <span className="text-sm font-medium">Todas as funcionalidades liberadas</span>
+                  <div className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="font-semibold text-sm">
+                      {isActive() ? 'Ativo' : isTrialing() ? 'Período de Teste' : 'Ativo'}
+                    </span>
                   </div>
-                )}
+                </div>
+                <div className="flex items-center gap-2 text-green-600">
+                  <Sparkles className="w-4 h-4" />
+                  <span className="text-sm font-medium">Todas as funcionalidades liberadas</span>
+                </div>
               </div>
             </div>
             
@@ -314,11 +203,7 @@ export function SubscriptionManagement() {
                 <DollarSign className="w-6 h-6 text-purple-600" />
                 <span className="font-bold text-purple-900">Status do Pagamento</span>
               </div>
-              <p className="text-purple-800 text-lg font-semibold">
-                {isActive() ? 'Em dia' : 
-                 isPastDue() ? 'Pendente' : 
-                 'Inativo'}
-              </p>
+              <p className="text-purple-800 text-lg font-semibold">Em dia</p>
             </div>
           </div>
 
@@ -334,33 +219,8 @@ export function SubscriptionManagement() {
               ) : (
                 <CreditCard className="w-5 h-5" />
               )}
-              Alterar Forma de Pagamento
+              Gerenciar Pagamento
             </button>
-
-            {isActive() && !subscription.cancel_at_period_end && (
-              <button
-                onClick={() => setShowCancelConfirm(true)}
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-semibold shadow-lg transform hover:scale-105"
-              >
-                <Trash2 className="w-5 h-5" />
-                Cancelar Assinatura
-              </button>
-            )}
-
-            {subscription.cancel_at_period_end && (
-              <button
-                onClick={handleReactivateSubscription}
-                disabled={actionLoading === 'reactivate'}
-                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {actionLoading === 'reactivate' ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-5 h-5" />
-                )}
-                Reativar Assinatura
-              </button>
-            )}
 
             <button
               onClick={refetch}
@@ -370,22 +230,6 @@ export function SubscriptionManagement() {
               Atualizar Status
             </button>
           </div>
-
-          {/* Cancellation Warning */}
-          {subscription.cancel_at_period_end && (
-            <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6">
-              <div className="flex items-center gap-4">
-                <AlertTriangle className="w-8 h-8 text-yellow-600 flex-shrink-0" />
-                <div>
-                  <p className="font-bold text-yellow-800 text-lg mb-2">Assinatura será cancelada</p>
-                  <p className="text-yellow-700">
-                    Você continuará tendo acesso até <strong>{periodEnd?.toLocaleDateString('pt-BR')}</strong>. 
-                    Após essa data, sua conta voltará ao plano gratuito.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         /* No Active Subscription */
@@ -401,21 +245,6 @@ export function SubscriptionManagement() {
               Você está usando o plano gratuito. Faça upgrade para acessar recursos premium 
               como cardápio ilimitado, QR codes personalizados e suporte prioritário.
             </p>
-            
-            {/* Debug para usuários sem assinatura */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 mb-6 text-xs font-mono max-w-2xl mx-auto">
-                <h4 className="font-bold mb-2 text-blue-800">🔍 Debug - Sem Assinatura</h4>
-                <p><strong>Última verificação:</strong> {new Date(lastCheck).toLocaleTimeString()}</p>
-                <p><strong>Dados encontrados:</strong> {subscription ? 'Sim, mas sem acesso' : 'Nenhum dado de assinatura'}</p>
-                {subscription && (
-                  <>
-                    <p><strong>Subscription ID:</strong> {subscription.subscription_id || '❌ Ausente'}</p>
-                    <p><strong>Status:</strong> {subscription.subscription_status}</p>
-                  </>
-                )}
-              </div>
-            )}
             
             <div className="mb-6">
               <button
@@ -455,11 +284,11 @@ export function SubscriptionManagement() {
             </h4>
             <ul className="space-y-3">
               {[
-                { text: 'Cardápio básico', available: true },
-                { text: 'QR Code simples', available: true },
-                { text: 'Suporte limitado', available: false },
-                { text: 'Personalização limitada', available: false },
-                { text: 'Analytics básico', available: false }
+                { text: 'Acesso ao dashboard', available: true },
+                { text: 'Suporte básico', available: true },
+                { text: 'Editor de cardápio', available: false },
+                { text: 'QR Code personalizado', available: false },
+                { text: 'Pedidos via WhatsApp', available: false }
               ].map((feature, index) => (
                 <li key={index} className="flex items-center gap-3">
                   {feature.available ? (
@@ -504,53 +333,13 @@ export function SubscriptionManagement() {
       </div>
 
       {/* Available Plans */}
-      {!isActive() && (
+      {!userHasAccess && (
         <div>
           <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-3">
             <Sparkles className="w-6 h-6 text-purple-600" />
             Planos Disponíveis
           </h3>
           <PricingPlans />
-        </div>
-      )}
-
-      {/* Cancel Confirmation Modal */}
-      {showCancelConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <AlertTriangle className="w-10 h-10 text-red-600" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                Cancelar Assinatura?
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                Você continuará tendo acesso aos recursos premium até <strong>{periodEnd?.toLocaleDateString('pt-BR')}</strong>. 
-                Após essa data, sua conta voltará ao plano gratuito.
-              </p>
-            </div>
-            
-            <div className="flex gap-4">
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-semibold"
-              >
-                Manter Assinatura
-              </button>
-              <button
-                onClick={handleCancelSubscription}
-                disabled={actionLoading === 'cancel'}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {actionLoading === 'cancel' ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  'Confirmar Cancelamento'
-                )}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

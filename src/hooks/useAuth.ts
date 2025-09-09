@@ -17,13 +17,27 @@ export function useAuth() {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthState({
-        user: session?.user ?? null,
-        session,
-        loading: false,
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setAuthState({
+          user: session?.user ?? null,
+          session,
+          loading: false,
+        });
+      })
+      .catch((error) => {
+        console.error('Session recovery error:', error);
+        // If refresh token is invalid, clear all auth data and reload
+        if (error.message && error.message.includes('Refresh Token Not Found')) {
+          signOut();
+        } else {
+          setAuthState({
+            user: null,
+            session: null,
+            loading: false,
+          });
+        }
       });
-    });
 
     // Listen for auth changes
     const {

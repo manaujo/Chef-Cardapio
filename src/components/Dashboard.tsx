@@ -17,16 +17,17 @@ type ActiveTab = 'home' | 'menu' | 'settings' | 'public' | 'qr' | 'subscription'
 export function Dashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const { user } = useAuthContext();
-  const { hasAccess } = useSubscription();
+  const { hasAccess, loading } = useSubscription();
 
-  // Check if user has access to premium features
-  const requiresPlan = (tab: ActiveTab) => {
-    const premiumTabs: ActiveTab[] = ['menu', 'settings', 'public', 'qr'];
-    return premiumTabs.includes(tab) && !hasAccess();
-  };
+  // Funcionalidades que requerem plano premium
+  const premiumFeatures: ActiveTab[] = ['menu', 'settings', 'public', 'qr'];
+  
+  // Verificar se a funcionalidade atual requer plano premium
+  const requiresPremium = premiumFeatures.includes(activeTab);
+  const userHasAccess = hasAccess();
 
   const renderContent = () => {
-    // Always allow access to home, profile, subscription, and support
+    // Sempre permitir acesso a funcionalidades básicas
     if (['home', 'profile', 'subscription', 'support'].includes(activeTab)) {
       switch (activeTab) {
         case 'home':
@@ -42,8 +43,8 @@ export function Dashboard() {
       }
     }
 
-    // Check if premium features require a plan
-    if (requiresPlan(activeTab)) {
+    // Para funcionalidades premium, verificar acesso
+    if (requiresPremium && !userHasAccess && !loading) {
       const featureNames = {
         menu: 'o Editor de Cardápio',
         settings: 'as Configurações do Restaurante',
@@ -60,7 +61,7 @@ export function Dashboard() {
       );
     }
 
-    // Render premium features for users with active plans
+    // Renderizar funcionalidades premium para usuários com acesso
     switch (activeTab) {
       case 'menu':
         return <MenuEditor />;

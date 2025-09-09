@@ -7,22 +7,25 @@ import { supabase } from '../lib/supabase';
 
 export function PricingPlans() {
   const { user } = useAuthContext();
-  const { subscription, isActive } = useSubscription();
+  const { subscription, hasAccess } = useSubscription();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const handleSubscribe = async (priceId: string, mode: 'payment' | 'subscription') => {
-    if (!user) return;
+    if (!user) {
+      alert('Você precisa estar logado para assinar um plano');
+      return;
+    }
 
     setLoadingPlan(priceId);
 
     try {
-      console.log('Starting checkout process:', { priceId, mode });
+      console.log('Iniciando processo de checkout:', { priceId, mode });
       
-      // Get the current session token
+      // Obter token de sessão atual
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session?.access_token) {
-        throw new Error('No valid session found. Please log in again.');
+        throw new Error('Sessão inválida. Faça login novamente.');
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`, {
@@ -39,71 +42,39 @@ export function PricingPlans() {
         }),
       });
 
-      console.log('Checkout response status:', response.status);
+      console.log('Status da resposta:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Checkout response error:', errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+        console.error('Erro na resposta:', errorText);
+        throw new Error(`Erro HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('Checkout response data:', data);
+      console.log('Dados da resposta:', data);
 
       if (data.error) {
-        console.error('Checkout data error:', data.error);
+        console.error('Erro nos dados:', data.error);
         throw new Error(data.error);
       }
 
       if (data.url) {
-        console.log('Redirecting to checkout:', data.url);
-        // Tentar abrir em nova aba primeiro, se falhar usar redirecionamento
-        const newWindow = window.open(data.url, '_blank');
-        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-          // Se popup foi bloqueado, redirecionar na mesma aba
-          console.log('Popup blocked, redirecting in same tab');
-          window.location.href = data.url;
-        }
+        console.log('Redirecionando para checkout:', data.url);
+        window.location.href = data.url;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('URL de checkout não recebida');
       }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error('Erro ao criar sessão de checkout:', error);
       
-      // Mostrar erro mais detalhado para debugging
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      console.error('Detailed error:', error);
       
-      // Verificar tipo de erro e dar feedback específico
       if (errorMessage.includes('Failed to fetch')) {
-        alert(`❌ Erro de Conexão
-
-Não foi possível conectar com o servidor de pagamentos.
-
-🔧 Possíveis soluções:
-1. Verifique se as variáveis STRIPE_SECRET_KEY e STRIPE_WEBHOOK_SECRET estão configuradas no Supabase
-2. Verifique se a edge function 'create-checkout' está deployada
-3. Tente novamente em alguns minutos
-
-💡 Erro técnico: ${errorMessage}`);
+        alert(`❌ Erro de Conexão\n\nNão foi possível conectar com o servidor de pagamentos.\n\n🔧 Tente novamente em alguns minutos.\n\n💡 Erro técnico: ${errorMessage}`);
       } else if (errorMessage.includes('Payment service not configured')) {
-        alert(`⚙️ Configuração Necessária
-
-O sistema de pagamentos precisa ser configurado.
-
-📋 Para configurar:
-1. Acesse o Stripe Dashboard
-2. Copie sua Secret Key (sk_test_...)
-3. Configure no Supabase: Settings → Edge Functions → Environment Variables
-4. Adicione: STRIPE_SECRET_KEY=sua_chave_aqui
-
-💡 Erro: ${errorMessage}`);
+        alert(`⚙️ Serviço de Pagamento\n\nO sistema de pagamentos está sendo configurado.\n\n📋 Tente novamente em alguns minutos.\n\n💡 Erro: ${errorMessage}`);
       } else {
-        alert(`❌ Erro no Pagamento
-
-${errorMessage}
-
-🔄 Tente novamente ou entre em contato com o suporte.`);
+        alert(`❌ Erro no Pagamento\n\n${errorMessage}\n\n🔄 Tente novamente ou entre em contato com o suporte.`);
       }
     } finally {
       setLoadingPlan(null);
@@ -111,7 +82,7 @@ ${errorMessage}
   };
 
   const isCurrentPlan = (priceId: string) => {
-    return subscription?.price_id === priceId && isActive();
+    return subscription?.price_id === priceId && hasAccess();
   };
 
   return (
